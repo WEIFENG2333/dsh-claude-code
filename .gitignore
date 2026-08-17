@@ -1,0 +1,9 @@
+node_modules/
+.DS_Store
+coverage/
+.local/
+*.log
+*.tgz
+
+# lib is committed deliberately so GitHub-installed DSH bundles do not need a build toolchain.
+!lib/

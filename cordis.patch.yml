@@ -1,0 +1,37 @@
+# Claude Code compatibility layer over the shipped DSH base bundle.
+
+- id: agent-default-model
+  config:
+    provider: deepseek-claude-code
+    model: deepseek-v4-flash
+
+- id: system-prompt
+  config:
+    includeHarnessIdentity: false
+    includeRuntimeContext: true
+    persona: ''
+
+- id: tool-web
+  config:
+    fetch: true
+
+- insert:
+    - id: claude-code-lsp-provider
+      name: 'dsh-claude-code/lsp-provider'
+      config:
+        autoDetect: true
+
+    - id: web-fetch-http
+      name: 'dsh-claude-code/web-fetch-provider'
+
+    - id: claude-code-compat
+      name: dsh-claude-code
+      config:
+        provider: deepseek-claude-code
+        baseURL: https://api.deepseek.com/anthropic
+        apiKeyEnv: DEEPSEEK_API_KEY
+        model: deepseek-v4-flash
+        maxTokens: 32000
+        contextWindow: 1000000
+        effort: max
+        requestTimeoutMs: 600000
