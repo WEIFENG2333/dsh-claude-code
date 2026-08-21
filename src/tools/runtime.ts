@@ -131,7 +131,7 @@ export function capturedToolDefinition(tool: CapturedTool, body: ClaudeToolBody)
       return body(args, exec)
     },
     finalizeContent: (_exec, result) => finalizeError(result),
-    isConcurrencySafe: () => ['Read', 'TaskGet', 'TaskList', 'ListAgents', 'CronList'].includes(tool.name),
+    isConcurrencySafe: () => ['Read', 'RemoteTrigger', 'ListAgents', 'CronList'].includes(tool.name),
     presentCall: args => ({ card: 'generic', title: tool.name, rawInput: JSON.stringify(args) }),
   }
 }

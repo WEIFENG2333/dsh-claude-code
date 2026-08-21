@@ -53,7 +53,7 @@ describe('Anthropic-compatible transport', () => {
     for await (const chunk of adapter.stream({
       provider: 'deepseek-claude-code',
       model: 'deepseek-v4-flash',
-      system: capturedSystemPrompt(),
+      system: capturedSystemPrompt('deepseek-v4-flash'),
       tools,
       messages: [createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'Say OK' }] })],
     })) assembler.push(chunk)

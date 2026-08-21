@@ -1,0 +1,3 @@
+name: Claude Code 模式
+description: 使用 Claude Code 提示词与工具，同时复用 DSH 已配置的模型、权限和运行环境。
+order: 20

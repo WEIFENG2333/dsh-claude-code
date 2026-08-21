@@ -4,17 +4,23 @@
 
 | 项目 | 当前目标 |
 | --- | --- |
-| Claude Code | `2.1.233.067`（本机 CLI 显示 `2.1.233`） |
-| DeepSeek Harness | `0.1.0-rc.7` |
-| 模型 | `deepseek-v4-flash` |
-| 工具 schema | 31 个，捕获顺序与 JSON 字段保持一致 |
-| 首轮请求 | 归一化动态身份、日期、header 和代理路径后全量深度相等 |
+| Claude Code | `2.1.234.f09`（本机 CLI 显示 `2.1.234`） |
+| DeepSeek Harness | 支持插件提供 Agent Preset 的版本 |
+| 模型 | 复用 DSH 当前会话选择 |
+| 工具 schema | 26 个内置工具，捕获顺序与 JSON 字段保持一致 |
+| 模型可见表面 | 系统提示词和工具表面与捕获基准一致 |
 
 ## 请求保证
 
-插件精确构造 `model`、`messages`、三段 `system`、有序 `tools`、`metadata`、`max_tokens`、`thinking`、`context_management`、`output_config` 和 `stream`。工作目录、git 状态、平台、shell、内核、日期、设备/会话标识、Claude 指令和 memory 目录来自当前运行环境，因此它们的值应与同机同目录的 Claude Code 相同，而不是硬编码为捕获机器的内容。
+默认 bundle 不注册 LLM adapter。系统提示词、Claude 初始上下文和有序工具 schema 由插件组装，`model`、消息序列化、认证、token 参数、流式格式与 provider 专用字段由当前 DSH provider 构造。工作目录、git 状态、平台、shell、内核、日期、Claude 指令和 memory 目录来自每个 agent 的启动环境，而不是硬编码为捕获机器的内容。
 
-headers 不属于全量相等断言。插件发送捕获到的稳定 Anthropic 协议头，并保留 DSH 必需的客户端归因；认证和机器指纹由各自客户端生成，不能复制或提交。
+因此插件保证的是 Claude Code 的模型可见语义，不保证 DeepSeek、Anthropic、OpenAI 等不同协议生成相同 HTTP JSON。使用 Anthropic Messages provider 时，字段会尽量保持相同含义；`src/adapter.ts` 和 `src/request.ts` 仍保留捕获请求的精确构造与回归测试，但不会由安装 bundle 自动接管 DSH 的模型路由。
+
+## 模式与模型
+
+Web 中 `claude-code` 是独立 preset。它只在被选择的会话 scope 中注册提示词、上下文和工具；Standard、Code 等模式维持原组装。模型选择属于 DSH host plane，切换模型不会切换 preset，切换 preset也不会修改默认模型。
+
+headless 没有 preset 选择器，因此安装该 profile 后直接使用 Claude 表面。主请求和 WebFetch 辅助请求都沿用该会话的 DSH provider/model。
 
 ## 工具映射
 
@@ -23,25 +29,25 @@ headers 不属于全量相等断言。插件发送捕获到的稳定 Anthropic �
 | 文件与 shell | Read、Write、Edit、Bash、NotebookEdit | DSH fs/shell 工具；补充 Claude 行号、图片/PDF、返回文本与 notebook cell 语义 |
 | Web 与扩展 | WebSearch、WebFetch、Skill、Workflow | DSH web/skill/workflow；WebFetch 再用当前模型回答页面问题 |
 | Agent 与消息 | Agent、ListAgents、SendMessage | DSH subagent/control；维护 Claude 后台状态投影 |
-| 任务 | TaskCreate、TaskGet、TaskList、TaskUpdate、TaskOutput、TaskStop | session 内任务表加 DSH background job/subagent |
+| 后台任务 | TaskOutput、TaskStop | DSH background job/subagent |
 | 调度与监控 | CronCreate、CronDelete、CronList、ScheduleWakeup、Monitor | session 内 timer、agent followup 和 DSH 后台 shell |
 | 工作树 | EnterWorktree、ExitWorktree | git worktree 与 session cwd 映射，删除前检查提交和未提交修改 |
 | 协作输出 | PushNotification、ReportFindings、ShareOnboardingGuide | 本机通知、工作区 findings 文件和本地 onboarding 存储 |
 | 设计 | DesignSync | 本地项目/计划/文件/asset 状态机，写删操作受 finalized plan 限制 |
-| 语言服务 | LSP | DSH LSP + stdio server 自动探测/显式配置 |
-| MCP 启动 | WaitForMcpServers | 映射 DSH 在首轮前完成 MCP discovery 的启动语义 |
+| 远程例程 | RemoteTrigger | 使用 Claude Code 本地 OAuth 访问固定的 Anthropic remote-trigger API |
 
 ## 已知差异
 
+- DSH 的通用 runtime-context 消息结构与 Claude Code 原生客户端不完全相同；精确 Anthropic adapter 会使用捕获布局，默认 provider 路径以语义兼容为目标。
 - 按需求暂不复制 Claude Code 的权限选择 UI、allow/deny 规则、hook 审批和交互式确认流程；实际安全行为仍由 DSH profile 的 sandbox/approval 配置决定。
-- 工具 schema 暴露 Claude Code 当前 9 个 LSP operation。DSH `0.1.0-rc.7` capability 只提供 `goToDefinition`、`findReferences`、`goToImplementation` 和 `hover`；`documentSymbol`、`workspaceSymbol`、`prepareCallHierarchy`、`incomingCalls`、`outgoingCalls` 会返回明确的 unsupported error。
+- Claude 账号连接器、MCP、LSP 和实验开关可能为原生客户端动态增加工具；公共基准不固化这些机器专属工具。
 - `Workflow.resumeFromRunId` 尚无 DSH 对应能力，会明确失败；新 workflow、内联脚本和路径脚本可运行。
 - DesignSync 是受约束的本地兼容 backend，不连接 Claude 的托管 design 服务。ShareOnboardingGuide 同样使用本地存储，没有 Claude 云端 short-code 服务。
 - PushNotification 在 Linux 上通过可选的 `notify-send` 执行；没有该命令时仍安全返回，但不会产生系统通知。
 - Monitor 使用 DSH background job；它不模拟 Claude 客户端把每一行进程输出主动插入聊天 UI 的呈现层行为，输出可通过 TaskOutput 获取。
-- Cron 和 ScheduleWakeup 是 session 进程内状态，进程退出后消失；recurring cron 最长运行七天。cron parser 支持标准五字段语法的常用范围、列表、步长和通配符，不承诺复现所有第三方 cron 扩展。
+- Cron 和 ScheduleWakeup 目前是 session 进程内状态，进程退出后消失；`CronCreate.durable` 尚未持久化，recurring cron 最长运行七天。cron parser 支持标准五字段语法的常用范围、列表、步长和通配符，不承诺复现所有第三方 cron 扩展。
 - Agent subtype、model 和 isolation 参数会尽可能映射到 DSH subagent，但 DSH provider 不具备的调度提示不会改变其执行引擎。
-- WaitForMcpServers 的命名 server 分支只报告“已不在 pending”；当前 DSH 在首轮前完成 MCP discovery，插件不会重新实现 Claude 的异步 MCP 启动管理器。
+- RemoteTrigger 依赖本机 Claude Code 的有效 claude.ai 登录；插件不会刷新过期 OAuth token，而会提示用户通过 Claude Code 重新登录。
 - 返回文本以可观测的 Claude Code 源码行为和实测为准，但 DSH provider 的底层错误详情、平台路径、命令输出和网络结果天然依赖执行环境，不属于逐字节稳定保证。
 
 ## 升级规则

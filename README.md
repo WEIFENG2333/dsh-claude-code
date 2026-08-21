@@ -3,108 +3,67 @@
 [![CI](https://github.com/WEIFENG2333/dsh-claude-code/actions/workflows/ci.yml/badge.svg)](https://github.com/WEIFENG2333/dsh-claude-code/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-让 DeepSeek Harness（DSH）以接近 Claude Code 的方式工作。
+为 DeepSeek Harness（DSH）增加一个独立的“Claude Code 模式”。它使用从 Claude Code 捕获并适配的系统提示词、工具定义和主要工具行为，同时继续使用 DSH 自己的模型、权限、沙箱和运行环境。
 
-安装这个插件后，DSH 会使用 Claude Code 的系统提示词和工具，并通过 `deepseek-v4-flash` 完成编码任务。你可以让它阅读和修改文件、执行命令、搜索网页、拆分任务，以及理解和跳转代码。
-
-插件同时支持命令行和 DSH Web，不需要修改 DSH 源码。
+安装后，Web 中原有的 Standard、Code 等模式不会被覆盖。新建会话时选择“Claude Code 模式”，再像平常一样选择 DSH 中已经配置好的模型即可。
 
 > 本项目不是 Anthropic 官方项目。Claude Code 是 Anthropic 的产品和商标。
 
-## 主要功能
+## 能做什么
 
-- 使用 Claude Code 的系统提示词和 31 个工具
+- 提供 Claude Code 的系统提示词和 26 个内置工具
+- 支持读写文件、执行命令、网页搜索、子 Agent、后台任务、调度和工作流
 - 自动读取项目中的 `CLAUDE.md`、规则和记忆文件
-- 支持文件编辑、命令执行、网页搜索、任务拆分、工作流和代码跳转
-- 默认使用 DeepSeek 的 `deepseek-v4-flash`
-- 同时支持命令行和 Web
+- 复用 DSH 的模型配置，不限定 DeepSeek，也不额外接管默认模型
 
-当前版本以 Claude Code `2.1.233`、DeepSeek Harness `0.1.0-rc.7` 和 31 个 Claude Code 工具为兼容目标。除日期、设备 ID、会话 ID 等每次运行都会变化的内容外，第一次发给模型的请求体已经与 Claude Code 逐项比较一致。
+当前兼容基准为 Claude Code `2.1.234`。工具名称、顺序、描述和参数 schema 与捕获基准保持一致；不同模型协议的最终 HTTP 请求由对应的 DSH provider 生成，因此不承诺跨协议逐字节相同。
 
-## 使用方法
+## Web 使用方法
 
-### 准备
-
-你需要：
-
-- Node.js `^22.19.0` 或 `>=24.0.0`
-- DeepSeek Harness `0.1.0-rc.7`
-- 一个可用的 `DEEPSEEK_API_KEY`
-- 建议使用 pnpm 10 或更高版本
-
-### 命令行模式
-
-安装插件：
-
-```sh
-dsh plugin --profile headless add -w github:WEIFENG2333/dsh-claude-code
-```
-
-进入要操作的项目，然后启动任务：
-
-```sh
-cd /path/to/project
-export DEEPSEEK_API_KEY='your-api-key'
-dsh --profile headless '检查这个项目并修复测试失败'
-```
-
-### Web 模式
-
-Web 使用独立配置，需要单独安装一次：
+安装到 Web profile：
 
 ```sh
 dsh plugin --profile web add -w github:WEIFENG2333/dsh-claude-code
 ```
 
-从项目目录启动：
+重启 Web：
 
 ```sh
-cd /path/to/project
-export DEEPSEEK_API_KEY='your-api-key'
 dsh web
 ```
 
-浏览器打开 <http://127.0.0.1:3080>，选择当前项目，并使用“标准模式 / Standard mode”创建新会话。
+打开 <http://127.0.0.1:3080>，创建新会话时选择“Claude Code 模式”，模型仍从 DSH 的模型列表中选择。
 
-安装或升级插件后，需要重启 `dsh web`。为了让工作目录和 `CLAUDE.md` 与 Claude Code 保持一致，建议从目标项目根目录启动 Web，并在页面中选择同一个目录。
+## 命令行使用方法
 
-### 为什么安装命令有 `-w`
-
-`-w` 表示把插件安装到当前 DSH profile。它不会全局安装插件，也不会修改你的代码项目。缺少它时，pnpm 可能会报告 `ERR_PNPM_ADDING_TO_ROOT`。
-
-## 检查是否安装成功
+headless profile 没有模式选择器，因此安装后会直接使用 Claude Code 表面，模型仍取自该 profile 的 DSH 配置：
 
 ```sh
-dsh plugin --profile web list
-dsh web --dump-config | grep -E 'dsh-claude-code|deepseek-v4-flash'
+dsh plugin --profile headless add -w github:WEIFENG2333/dsh-claude-code
+dsh --profile headless '检查这个项目并修复测试失败'
 ```
 
-输出中出现 `dsh-claude-code` 和 `deepseek-v4-flash`，说明插件已经加载。
+`-w` 是 pnpm 的 workspace-root 选项，表示把插件装进当前 DSH profile，不是全局安装。
 
-安装时可能出现 peer dependency warning。只要安装命令和 `--dump-config` 成功，这些 warning 不影响插件使用。
+## 模型与协议
 
-## 需要知道的限制
+插件不自带或锁定模型。DeepSeek、Anthropic、OpenAI 兼容服务以及其他模型，只要已经能在 DSH 中正常使用，就可以继续用于 Claude Code 模式。
 
-- Claude Code 的权限选择界面没有复刻，文件和命令权限仍由 DSH 管理。
-- 少数依赖 Claude 云端服务的功能使用本地替代实现。
-- 部分高级 LSP 和 Workflow 操作暂不支持，调用时会返回明确错误。
-- 工具的实际输出会受到操作系统、命令、网络和项目内容影响，不保证每个字符都与 Claude Code 相同。
+Claude Code 的提示词和工具表面由本插件负责；认证、重试、流式响应和具体请求协议由所选 DSH provider 负责。使用 Anthropic Messages 协议时会尽量保持 Claude Code 的字段语义，但以兼容和可用为目标，不要求请求体每个字节完全相同。
 
-详细的工具对应关系和差异见[兼容性说明](docs/compatibility.md)。
+## 注意事项
 
-## 更多文档
+- 需要使用包含“插件提供 Agent Preset”支持的新版 DSH；旧版 Web 会明确提示升级。
+- Claude Code 的权限选择界面没有复刻，实际权限仍由 DSH 管理。
+- DesignSync 等少数云端功能使用本地替代实现；RemoteTrigger 需要本机已登录 Claude Code。
+- 安装或升级插件后需要重启 DSH。
 
-- [兼容性说明](docs/compatibility.md)
-- [项目架构](docs/architecture.md)
-- [抓取与验证](docs/capture-and-verification.md)
-- [贡献指南](CONTRIBUTING.md)
-- [安全策略](SECURITY.md)
+更详细的范围与差异见[兼容性说明](docs/compatibility.md)。
 
 ## 参考
 
 - [DeepSeek：在 Claude Code 中使用 DeepSeek API](https://api-docs.deepseek.com/zh-cn/quick_start/agent_integrations/claude_code/)
 - [Claude Tap](https://github.com/WEIFENG2333/claude-tap)
-- [Claude Code 源码镜像](https://github.com/yasasbanukaofficial/claude-code)
 
 ## 许可证
 

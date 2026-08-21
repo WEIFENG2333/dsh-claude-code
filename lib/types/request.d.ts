@@ -42,7 +42,7 @@ export declare function captureRuntimeEnvironment(model?: string, cwd?: string, 
 /** Materialize the captured system blocks for one immutable startup snapshot. */
 export declare function materializeCapturedSystem(environment?: ClaudeRuntimeEnvironment): MaterializedClaudeSystem;
 /** Return the captured system prompt as one DSH system string. */
-export declare function capturedSystemPrompt(): string;
+export declare function capturedSystemPrompt(model?: string): string;
 /** Return the captured agent catalog message text for the runtime-context log. */
 export declare function capturedAgentContext(): string;
 /** Render the current-date reminder while preserving every captured byte except the date. */

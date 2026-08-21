@@ -11,6 +11,7 @@ import { SessionId } from '@deepseek-ai/dsh-session'
 import { CLAUDE_CODE_BASELINE } from '../src/generated/claude-code-baseline.ts'
 import {
   buildClaudeRequest,
+  captureRuntimeEnvironment,
   capturedSystemPrompt,
   currentDateReminder,
   materializeCapturedSystem,
@@ -38,7 +39,7 @@ describe('Claude Code request serialization', () => {
       reasoningEffort: ReasoningEffortId('max'),
       maxTokens: 32_000,
       sessionId: SessionId('session-fixed'),
-      system: capturedSystemPrompt(),
+      system: capturedSystemPrompt('deepseek-v4-flash'),
       tools,
       messages: [createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: prompt }] })],
     }, {
@@ -66,7 +67,9 @@ describe('Claude Code request serialization', () => {
         },
         structuredClone(CLAUDE_CODE_BASELINE.initialContext.agentContextMessage),
       ],
-      system: structuredClone(materializeCapturedSystem().blocks),
+      system: structuredClone(materializeCapturedSystem(
+        captureRuntimeEnvironment('deepseek-v4-flash'),
+      ).blocks),
       tools: structuredClone(CLAUDE_CODE_BASELINE.tools),
       metadata: {
         user_id: JSON.stringify({
@@ -106,7 +109,7 @@ describe('Claude Code request serialization', () => {
     await expect(buildClaudeRequest({
       provider: 'deepseek-claude-code',
       model: 'deepseek-v4-flash',
-      system: capturedSystemPrompt(),
+      system: capturedSystemPrompt('deepseek-v4-flash'),
       tools,
       messages: [createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'x' }] })],
     }, {
@@ -147,7 +150,7 @@ describe('Claude Code request serialization', () => {
     const built = await buildClaudeRequest({
       provider: 'deepseek-claude-code',
       model: 'deepseek-v4-flash',
-      system: capturedSystemPrompt(),
+      system: capturedSystemPrompt('deepseek-v4-flash'),
       tools,
       messages: [
         createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'run both' }] }),
@@ -187,7 +190,7 @@ describe('Claude Code request serialization', () => {
     const built = await buildClaudeRequest({
       provider: 'deepseek-claude-code',
       model: 'deepseek-v4-flash',
-      system: capturedSystemPrompt(),
+      system: capturedSystemPrompt('deepseek-v4-flash'),
       tools,
       messages: [
         createUserMessage({ source: { kind: 'user' }, content: [{ type: 'text', text: 'FIRST' }] }),

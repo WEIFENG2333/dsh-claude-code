@@ -86,10 +86,18 @@ async function readPdf(
 
 /** Model route used by Claude's prompt-aware WebFetch compatibility call. */
 export interface CoreToolOptions {
-  readonly provider: string
-  readonly model: string
   readonly webFetchMaxTokens: number
   readonly workspace: ClaudeWorkspace
+}
+
+function activeModelRoute(exec: ToolRunContext): { provider: string; model: string } {
+  const logged = exec.agent?.session.requestHeader()?.config
+  const provider = logged?.provider ?? exec.agent?.options.provider
+  const model = logged?.model ?? exec.agent?.options.model
+  if (provider === undefined || provider.length === 0 || model === undefined || model.length === 0) {
+    throw new HarnessError('WebFetch requires a calling agent with a selected provider and model', 'MODEL_ROUTE_MISSING')
+  }
+  return { provider, model }
 }
 
 async function answerWebFetch(
@@ -103,6 +111,7 @@ async function answerWebFetch(
   if (fetched.isError) nestedError(fetched)
   const page = contentText(fetched.content)
   const assembler = new BlockAssembler()
+  const route = activeModelRoute(exec)
   const message = createUserMessage({
     source: { kind: 'plugin', plugin: 'dsh-claude-code/web-fetch' },
     content: [{
@@ -111,8 +120,7 @@ async function answerWebFetch(
     }],
   })
   for await (const chunk of ctx.llm.stream({
-    provider: options.provider,
-    model: options.model,
+    ...route,
     messages: [message],
     maxTokens: options.webFetchMaxTokens,
     purpose: 'compaction',

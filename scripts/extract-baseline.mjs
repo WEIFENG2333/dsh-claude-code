@@ -38,12 +38,24 @@ function templateSystem(system, model) {
   text = replaceRequired(text, /(?<= - Platform: )[^\n]+/u, RUNTIME_TOKENS.platform, 'platform')
   text = replaceRequired(text, /(?<= - Shell: )[^\n]+/u, RUNTIME_TOKENS.shell, 'shell')
   text = replaceRequired(text, /(?<= - OS Version: )[^\n]+/u, RUNTIME_TOKENS.osVersion, 'OS version')
-  text = replaceRequired(
-    text,
-    new RegExp(`(?<= - You are powered by the model )${model.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')}(?=\\.)`, 'u'),
-    RUNTIME_TOKENS.model,
-    'model id',
+  const escapedModel = model.replace(/[.*+?^${}()|[\]\\]/gu, '\\$&')
+  const namedModel = new RegExp(
+    `^ - You are powered by the model named [^\\n]+\\. The exact model ID is ${escapedModel}(?:\\[1m\\])?\\.$`,
+    'mu',
   )
+  if (namedModel.test(text)) {
+    text = text.replace(
+      namedModel,
+      ` - You are powered by the model named ${RUNTIME_TOKENS.model}. The exact model ID is ${RUNTIME_TOKENS.model}.`,
+    )
+  } else {
+    text = replaceRequired(
+      text,
+      new RegExp(`(?<= - You are powered by the model )${escapedModel}(?=\\.)`, 'u'),
+      RUNTIME_TOKENS.model,
+      'model id',
+    )
+  }
   if (text.includes('# Memory')) {
     text = replaceRequired(
       text,

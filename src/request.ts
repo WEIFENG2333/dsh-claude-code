@@ -161,8 +161,8 @@ export function materializeCapturedSystem(
 }
 
 /** Return the captured system prompt as one DSH system string. */
-export function capturedSystemPrompt(): string {
-  return materializeCapturedSystem().prompt
+export function capturedSystemPrompt(model: string = CLAUDE_CODE_BASELINE.defaults.model): string {
+  return materializeCapturedSystem(captureRuntimeEnvironment(model)).prompt
 }
 
 /** Return the captured agent catalog message text for the runtime-context log. */

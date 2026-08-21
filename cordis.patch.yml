@@ -1,37 +1,15 @@
-# Claude Code compatibility layer over the shipped DSH base bundle.
+# Claude Code mode over the shipped DSH bundle. Web receives an independent
+# agent preset; headless retains its one global agent surface.
 
-- id: agent-default-model
-  config:
-    provider: deepseek-claude-code
-    model: deepseek-v4-flash
-
-- id: system-prompt
-  config:
-    includeHarnessIdentity: false
-    includeRuntimeContext: true
-    persona: ''
-
+# Headless owns model-facing rows globally. The Web host copy is disabled, so
+# this does not change Standard mode's scoped web tool.
 - id: tool-web
   config:
     fetch: true
 
 - insert:
-    - id: claude-code-lsp-provider
-      name: 'dsh-claude-code/lsp-provider'
-      config:
-        autoDetect: true
-
     - id: web-fetch-http
       name: 'dsh-claude-code/web-fetch-provider'
 
-    - id: claude-code-compat
+    - id: claude-code-mode
       name: dsh-claude-code
-      config:
-        provider: deepseek-claude-code
-        baseURL: https://api.deepseek.com/anthropic
-        apiKeyEnv: DEEPSEEK_API_KEY
-        model: deepseek-v4-flash
-        maxTokens: 32000
-        contextWindow: 1000000
-        effort: max
-        requestTimeoutMs: 600000

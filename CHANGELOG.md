@@ -4,10 +4,17 @@
 
 ## [Unreleased]
 
+### Changed
+
+- Web 改为新增独立的“Claude Code 模式”，不再覆盖 Standard 模式。
+- 模型与 provider 改为复用 DSH 当前选择，不再默认注册 DeepSeek 专用 adapter 或修改默认模型。
+- WebFetch 的辅助模型调用会跟随当前会话选择的 provider/model。
+- Anthropic Messages 以提示词、工具和字段语义兼容为目标，不再把跨 provider 的 HTTP 字节级一致作为默认 bundle 保证。
+
 ### Added
 
-- 基于 Claude Code `2.1.233.067` Claude Tap trace 的三段系统提示词、初始上下文和 31 个工具 schema 基线。
-- DeepSeek Anthropic 兼容 adapter，默认使用 `deepseek-v4-flash`。
-- DSH 文件、shell、web、skill、workflow、subagent、job、LSP 和工具注册表适配。
-- Task、cron、wakeup、worktree、Notebook、DesignSync、onboarding 和 findings 的 Claude 兼容实现。
+- 基于 Claude Code `2.1.234.f09` Claude Tap trace 的三段系统提示词、初始上下文和 26 个内置工具 schema 基线。
+- 可单独使用和验证的 DeepSeek Anthropic 兼容 adapter。
+- DSH 文件、shell、web、skill、workflow、subagent、job 和工具注册表适配。
+- cron、wakeup、worktree、Notebook、DesignSync、RemoteTrigger、onboarding 和 findings 的 Claude 兼容实现。
 - 首轮请求精确比较、敏感内容扫描、单元测试和 GitHub 安装所需的已构建 `lib/`。
