@@ -1,4 +1,4 @@
-/** Host-owned configuration shared by the Claude Code preset and headless mode. */
+/** Host-owned configuration for the Claude Code compatibility surface. */
 import z from '@deepseek-ai/schemastery';
 /** Plugin configuration. Model and provider selection remain owned by DSH. */
 export interface PluginConfig {
@@ -30,7 +30,7 @@ export declare const Config: z<PluginConfig>;
 export declare function resolveConfig(config?: PluginConfig): ResolvedConfig;
 declare module '@deepseek-ai/cordis' {
     interface Context {
-        /** Host-owned settings consumed by the scoped Claude Code surface. */
+        /** Host-owned settings consumed by the Claude Code compatibility surface. */
         claudeCodeModeConfig: ResolvedConfig;
     }
 }

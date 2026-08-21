@@ -5,7 +5,7 @@
 | 项目 | 当前目标 |
 | --- | --- |
 | Claude Code | `2.1.234.f09`（本机 CLI 显示 `2.1.234`） |
-| DeepSeek Harness | 支持插件提供 Agent Preset 的版本 |
+| DeepSeek Harness | 正式发布的 `>=0.1.1-rc.1 <0.2.0`（已验证 `0.1.1-rc.2`） |
 | 模型 | 复用 DSH 当前会话选择 |
 | 工具 schema | 26 个内置工具，捕获顺序与 JSON 字段保持一致 |
 | 模型可见表面 | 系统提示词和工具表面与捕获基准一致 |
@@ -16,11 +16,11 @@
 
 因此插件保证的是 Claude Code 的模型可见语义，不保证 DeepSeek、Anthropic、OpenAI 等不同协议生成相同 HTTP JSON。使用 Anthropic Messages provider 时，字段会尽量保持相同含义；`src/adapter.ts` 和 `src/request.ts` 仍保留捕获请求的精确构造与回归测试，但不会由安装 bundle 自动接管 DSH 的模型路由。
 
-## 模式与模型
+## Profile 与模型
 
-Web 中 `claude-code` 是独立 preset。它只在被选择的会话 scope 中注册提示词、上下文和工具；Standard、Code 等模式维持原组装。模型选择属于 DSH host plane，切换模型不会切换 preset，切换 preset也不会修改默认模型。
+当前正式版 DSH 不支持普通插件新增 Web Agent Preset，因此插件不提供独立模式，也不依赖 DSH fork。它把 Claude 表面安装到目标 profile 的全局层；Web 使用 Standard 模式，headless 直接运行。需要保留未经修改的 Web 行为时，应使用另一个未安装本插件的 profile。
 
-headless 没有 preset 选择器，因此安装该 profile 后直接使用 Claude 表面。主请求和 WebFetch 辅助请求都沿用该会话的 DSH provider/model。
+模型选择仍属于 DSH。主请求和 WebFetch 辅助请求都沿用当前会话的 provider/model，安装插件不会修改默认模型。
 
 ## 工具映射
 

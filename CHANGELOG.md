@@ -4,9 +4,12 @@
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-08-21
+
 ### Changed
 
-- Web 改为新增独立的“Claude Code 模式”，不再覆盖 Standard 模式。
+- 取消依赖未发布 DSH 扩展的独立 Web preset，改为只使用正式 DSH 接口的 profile 级兼容层。
+- Web 使用内置 Standard 模式，不修改 DSH 源码、不写入用户 preset 目录，也不依赖 fork。
 - 模型与 provider 改为复用 DSH 当前选择，不再默认注册 DeepSeek 专用 adapter 或修改默认模型。
 - WebFetch 的辅助模型调用会跟随当前会话选择的 provider/model。
 - Anthropic Messages 以提示词、工具和字段语义兼容为目标，不再把跨 provider 的 HTTP 字节级一致作为默认 bundle 保证。

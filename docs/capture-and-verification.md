@@ -41,7 +41,7 @@ pnpm verify
 
 ## 4. 抓取 DSH 首轮请求
 
-把当前工作树安装到隔离 profile，使用同一个 fixture、prompt、模型和日期环境运行 DSH。Web 验证应创建 `claude-code` preset 会话；headless 安装后会直接使用 Claude 表面。
+把当前工作树安装到隔离 profile，使用同一个 fixture、prompt、模型和日期环境运行 DSH。Web 验证使用 Standard 模式；headless 安装后会直接使用 Claude 表面。
 
 ```sh
 dsh plugin --profile headless add <path-or-github-spec>
@@ -61,7 +61,7 @@ claude-tap \
 - 完整 system prompt（只归一化工作目录、git、平台、日期、模型名和私有指令）
 - 26 个内置工具的名称、顺序、描述和输入 schema
 - 首轮日期/指令上下文与 agent catalog
-- 所选 provider/model 与会话配置一致，且 Standard 会话不出现 Claude 工具
+- 所选 provider/model 与会话配置一致，且安装后的 Standard 会话只向模型公开 Claude 工具表面
 
 `capture:compare` 保留给显式接入 `ClaudeCodeAdapter` 的传输回归。该路径才要求归一化后的 Anthropic 主请求全量相等：
 

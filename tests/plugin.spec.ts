@@ -1,11 +1,10 @@
-import { describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { Context } from '@deepseek-ai/cordis'
 import { CallId } from '@deepseek-ai/dsh-llm'
 import LlmRuntime from '@deepseek-ai/dsh-llm'
 import SystemPrompt, { renderPrompt } from '@deepseek-ai/dsh-system-prompt'
 import ToolRuntime from '@deepseek-ai/dsh-tools'
 import { CLAUDE_CODE_BASELINE } from '../src/generated/claude-code-baseline.ts'
-import * as ClaudeCodeAgent from '../src/agent.ts'
 import * as ClaudeCodeMode from '../src/index.ts'
 import { capturedSystemPrompt } from '../src/request.ts'
 
@@ -21,32 +20,12 @@ async function runtime(): Promise<Context> {
 async function agentSurface(): Promise<Context> {
   const ctx = await runtime()
   await ctx.plugin(ClaudeCodeMode)
-  await ctx.plugin(ClaudeCodeAgent)
   return ctx
 }
 
-describe('Claude Code mode host', () => {
-  it('registers an independent Web preset without changing the global prompt or tools', async () => {
+describe('Claude Code compatibility host', () => {
+  it('installs the Claude surface without agent-preset or headless-only services', async () => {
     const ctx = await runtime()
-    const registerRoot = vi.fn(() => () => undefined)
-    ctx.provide('agentPresets', { registerRoot })
-
-    await ctx.plugin(ClaudeCodeMode)
-
-    expect(registerRoot).toHaveBeenCalledOnce()
-    expect(registerRoot).toHaveBeenCalledWith({
-      id: 'dsh-claude-code',
-      path: expect.stringMatching(/[/\\]presets$/u),
-    })
-    const assembly = await ctx.systemPrompt.assemble()
-    expect(renderPrompt(assembly)).toBe('Standard stays active.')
-    expect(assembly.tools).toEqual([])
-    expect(ctx.llm.listProviders()).toEqual([])
-  })
-
-  it('installs the same Claude surface automatically in headless profiles', async () => {
-    const ctx = await runtime()
-    ctx.provide('headlessStartup', { task: 'test' })
 
     await ctx.plugin(ClaudeCodeMode)
 
@@ -55,6 +34,7 @@ describe('Claude Code mode host', () => {
     expect(assembly.tools.map(tool => tool.name)).toEqual(
       CLAUDE_CODE_BASELINE.tools.map(tool => tool.name),
     )
+    expect(ctx.llm.listProviders()).toEqual([])
   })
 })
 

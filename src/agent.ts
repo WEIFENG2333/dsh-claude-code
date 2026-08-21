@@ -1,4 +1,4 @@
-/** Agent-plane Claude Code prompt and tool surface. */
+/** Claude Code prompt and tool surface for one installed DSH profile. */
 
 import { resolve } from 'node:path'
 import type { Context } from '@deepseek-ai/cordis'
@@ -30,7 +30,7 @@ import { ClaudeWorkspace } from './tools/workspace.ts'
 /** Cordis plugin name. */
 export const name = 'claude-code-agent-surface'
 
-/** DSH capabilities used by the scoped surface. */
+/** DSH capabilities used by the compatibility surface. */
 export const inject = ['claudeCodeModeConfig', 'llm', 'tools', 'systemPrompt']
 
 interface SurfaceSnapshot {
@@ -117,7 +117,7 @@ function toolBodies(ctx: Context, config: ResolvedConfig): Record<string, Claude
   }
 }
 
-/** Register Claude's prompt and tools in the calling agent-preset scope. */
+/** Register Claude's prompt and tools in the calling profile scope. */
 export function apply(ctx: Context): void {
   const config = ctx.claudeCodeModeConfig
   const snapshots = new SurfaceSnapshots(config)

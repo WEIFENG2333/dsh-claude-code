@@ -1,4 +1,4 @@
-/** Host-owned configuration shared by the Claude Code preset and headless mode. */
+/** Host-owned configuration for the Claude Code compatibility surface. */
 
 import { homedir } from 'node:os'
 import { resolve } from 'node:path'
@@ -79,7 +79,7 @@ export function resolveConfig(config: PluginConfig = {}): ResolvedConfig {
 
 declare module '@deepseek-ai/cordis' {
   interface Context {
-    /** Host-owned settings consumed by the scoped Claude Code surface. */
+    /** Host-owned settings consumed by the Claude Code compatibility surface. */
     claudeCodeModeConfig: ResolvedConfig
   }
 }

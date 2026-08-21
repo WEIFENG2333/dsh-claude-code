@@ -1,7 +1,7 @@
 {
   "name": "dsh-claude-code",
-  "version": "0.2.0",
-  "description": "Independent Claude Code-compatible agent mode for DeepSeek Harness",
+  "version": "0.2.1",
+  "description": "Claude Code-compatible prompt and tool surface for DeepSeek Harness",
   "type": "module",
   "main": "lib/index.js",
   "types": "lib/types/index.d.ts",
@@ -32,7 +32,6 @@
   "files": [
     "lib/**/*.js",
     "lib/types/**/*.d.ts",
-    "presets/**/*.yml",
     "cordis.patch.yml",
     "README.md",
     "CHANGELOG.md",

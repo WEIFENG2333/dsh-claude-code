@@ -1,8 +1,7 @@
-# Claude Code mode over the shipped DSH bundle. Web receives an independent
-# agent preset; headless retains its one global agent surface.
+# Claude Code compatibility surface over the installed DSH profile. It reuses
+# the profile's model/provider routing and requires no DSH source modification.
 
-# Headless owns model-facing rows globally. The Web host copy is disabled, so
-# this does not change Standard mode's scoped web tool.
+# Headless owns this row globally; Web keeps its preset-scoped native web tool.
 - id: tool-web
   config:
     fetch: true
@@ -11,5 +10,5 @@
     - id: web-fetch-http
       name: 'dsh-claude-code/web-fetch-provider'
 
-    - id: claude-code-mode
+    - id: claude-code-compat
       name: dsh-claude-code
